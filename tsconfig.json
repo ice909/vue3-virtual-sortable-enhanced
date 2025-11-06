@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ES2019",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "preserve",
+    "jsxImportSource": "vue",
+    "strict": true,
+    "skipLibCheck": true,
+    "declaration": true,
+    "declarationDir": "dist/types",
+    "outDir": "dist",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "noImplicitAny": false,
+    "lib": ["DOM", "ES2020"]
+  },
+  "include": ["src"]
+}

@@ -1,0 +1,34 @@
+{
+  "name": "virtual-sortable",
+  "version": "1.0.0",
+  "description": "Vue3 虚拟列表+拖拽排序 组件",
+  "homepage": "https://github.com/ice909/virutal-sortable#readme",
+  "bugs": {
+    "url": "https://github.com/ice909/virutal-sortable/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ice909/virutal-sortable.git"
+  },
+  "license": "MIT",
+  "author": "ice909",
+  "type": "module",
+  "main": "index.tsx",
+  "types": "dist/types/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "vite build && npm run build:types",
+    "build:types": "tsc --emitDeclarationOnly",
+    "dev:example": "vite --config example/vite.config.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.0",
+    "@vitejs/plugin-vue": "^6.0.1",
+    "@vitejs/plugin-vue-jsx": "^5.1.1",
+    "typescript": "^5.9.3",
+    "vite": "^7.2.1",
+    "vue": "^3.5.23"
+  }
+}
