@@ -1,4 +1,4 @@
-export type Direction = "vertical" | "horizontal";
+export type Direction = 'vertical' | 'horizontal';
 
 export type EventType = Event & (TouchEvent | MouseEvent);
 
@@ -25,7 +25,7 @@ export interface Group {
   /**
    * Ability to move from the list. `clone` — copy the item, rather than move.
    */
-  pull?: boolean | "clone";
+  pull?: boolean | 'clone';
 
   /**
    * Revert draged element to initial position after moving to a another list on `pull: 'clone'`.
@@ -86,7 +86,7 @@ export interface SortableEvent {
   /**
    * Pull value of the start list.
    */
-  pullMode: boolean | "clone";
+  pullMode: boolean | 'clone';
 
   /**
    * Position of the drag element relative to the drop element(target) after swap is complete.
@@ -179,7 +179,7 @@ export interface SortableOptions {
    * Axis on which dragging will be locked.
    * @defaults `''`
    */
-  lockAxis?: "x" | "y";
+  lockAxis?: 'x' | 'y';
 
   /**
    * Customize the ghost element in drag.
@@ -191,7 +191,13 @@ export interface SortableOptions {
    * Direction of Sortable, will be detected automatically if not given.
    * @defaults `''`
    */
-  direction?: Direction | ((event: EventType, dragEl: HTMLElement, sortable: Sortable) => Direction);
+  direction?:
+    | Direction
+    | ((
+        event: EventType,
+        dragEl: HTMLElement,
+        sortable: Sortable,
+      ) => Direction);
 
   /**
    * ms, animation speed moving items when sorting, `0` — without animation.
@@ -373,7 +379,11 @@ export interface Utils {
    * @param event an Event context.
    * @param fn
    */
-  on(el: HTMLElement, event: string, fn: EventListenerOrEventListenerObject): void;
+  on(
+    el: HTMLElement,
+    event: string,
+    fn: EventListenerOrEventListenerObject,
+  ): void;
 
   /**
    * Remove an event handler function.
@@ -381,7 +391,11 @@ export interface Utils {
    * @param event an Event context.
    * @param fn a callback.
    */
-  off(el: HTMLElement, event: string, fn: EventListenerOrEventListenerObject): void;
+  off(
+    el: HTMLElement,
+    event: string,
+    fn: EventListenerOrEventListenerObject,
+  ): void;
 
   /**
    * Get the values of all the CSS properties.
@@ -394,7 +408,10 @@ export interface Utils {
    * @param el an HTMLElement.
    * @param prop a property key.
    */
-  css<K extends keyof CSSStyleDeclaration>(el: HTMLElement, prop: K): CSSStyleDeclaration[K];
+  css<K extends keyof CSSStyleDeclaration>(
+    el: HTMLElement,
+    prop: K,
+  ): CSSStyleDeclaration[K];
 
   /**
    * Set one CSS property.
@@ -402,7 +419,11 @@ export interface Utils {
    * @param prop a property key.
    * @param value a property value.
    */
-  css<K extends keyof CSSStyleDeclaration>(el: HTMLElement, prop: K, value: CSSStyleDeclaration[K]): void;
+  css<K extends keyof CSSStyleDeclaration>(
+    el: HTMLElement,
+    prop: K,
+    value: CSSStyleDeclaration[K],
+  ): void;
 
   /**
    * Returns the index of an element within its parent for a selected set of elements
@@ -425,7 +446,12 @@ export interface Utils {
    * @param context a specific element's context.
    * @param includeContext whether to add `context` to comparison
    */
-  closest(el: HTMLElement, selector: string, context?: HTMLElement, includeContext?: boolean): HTMLElement | null;
+  closest(
+    el: HTMLElement,
+    selector: string,
+    context?: HTMLElement,
+    includeContext?: boolean,
+  ): HTMLElement | null;
 
   /**
    * Returns the "bounding client rect" of given element
@@ -433,7 +459,11 @@ export interface Utils {
    * @param relativeToContainingBlock Whether the rect should be relative to the containing block of (including) the container
    * @param container The parent the element will be placed in
    */
-  getRect(el: HTMLElement, relativeToContainingBlock?: boolean, container?: HTMLElement): DOMRect;
+  getRect(
+    el: HTMLElement,
+    relativeToContainingBlock?: boolean,
+    container?: HTMLElement,
+  ): DOMRect;
 
   /**
    * Add or remove one classes from each element.
@@ -505,7 +535,10 @@ declare class Sortable {
    * @param name a SortableOptions property.
    * @param value a value.
    */
-  option<K extends keyof SortableOptions>(name: K, value: SortableOptions[K]): void;
+  option<K extends keyof SortableOptions>(
+    name: K,
+    value: SortableOptions[K],
+  ): void;
   option<K extends keyof SortableOptions>(name: K): SortableOptions[K];
 
   /**

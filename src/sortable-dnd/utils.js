@@ -1,4 +1,4 @@
-import Sortable from "./index.js";
+import Sortable from './index.js';
 
 const captureMode = {
   capture: false,
@@ -8,15 +8,18 @@ const captureMode = {
 const R_SPACE = /\s+/g;
 
 function userAgent(pattern) {
-  if (typeof window !== "undefined" && window.navigator) {
+  if (typeof window !== 'undefined' && window.navigator) {
     return !!(/*@__PURE__*/ navigator.userAgent.match(pattern));
   }
 }
 
-export const IE11OrLess = userAgent(/(?:Trident.*rv[ :]?11\.|msie|iemobile|Windows Phone)/i);
+export const IE11OrLess = userAgent(
+  /(?:Trident.*rv[ :]?11\.|msie|iemobile|Windows Phone)/i,
+);
 export const Edge = userAgent(/Edge/i);
 export const FireFox = userAgent(/firefox/i);
-export const Safari = userAgent(/safari/i) && !userAgent(/chrome/i) && !userAgent(/android/i);
+export const Safari =
+  userAgent(/safari/i) && !userAgent(/chrome/i) && !userAgent(/android/i);
 export const IOS = userAgent(/iP(ad|od|hone)/i);
 export const ChromeForAndroid = userAgent(/chrome/i) && userAgent(/android/i);
 
@@ -25,7 +28,7 @@ export const ChromeForAndroid = userAgent(/chrome/i) && userAgent(/android/i);
  */
 export const supportPassive = (function () {
   let supportPassive = false;
-  document.addEventListener("checkIfSupportPassive", null, {
+  document.addEventListener('checkIfSupportPassive', null, {
     get passive() {
       supportPassive = true;
       return true;
@@ -39,7 +42,7 @@ export const supportPassive = (function () {
  */
 export function isHTMLElement(el) {
   if (!el) return false;
-  let ctx = document.createElement("div");
+  let ctx = document.createElement('div');
   try {
     ctx.appendChild(el.cloneNode(true));
     return el.nodeType == 1 ? true : false;
@@ -53,11 +56,15 @@ export function isHTMLElement(el) {
  */
 export function on(el, event, fn) {
   if (window.addEventListener) {
-    el.addEventListener(event, fn, supportPassive || !IE11OrLess ? captureMode : false);
+    el.addEventListener(
+      event,
+      fn,
+      supportPassive || !IE11OrLess ? captureMode : false,
+    );
   } else if (window.attachEvent) {
-    el.attachEvent("on" + event, fn);
+    el.attachEvent('on' + event, fn);
   } else {
-    el["on" + event] = fn;
+    el['on' + event] = fn;
   }
 }
 
@@ -66,11 +73,15 @@ export function on(el, event, fn) {
  */
 export function off(el, event, fn) {
   if (window.removeEventListener) {
-    el.removeEventListener(event, fn, supportPassive || !IE11OrLess ? captureMode : false);
+    el.removeEventListener(
+      event,
+      fn,
+      supportPassive || !IE11OrLess ? captureMode : false,
+    );
   } else if (window.detachEvent) {
-    el.detachEvent("on" + event, fn);
+    el.detachEvent('on' + event, fn);
   } else {
-    el["on" + event] = null;
+    el['on' + event] = null;
   }
 }
 
@@ -84,11 +95,16 @@ export function getScrollingElement(el, includeSelf) {
   let gotSelf = false;
   do {
     // we don't need to get elem css if it isn't even overflowing in the first place (performance)
-    if (elem.clientWidth < elem.scrollWidth || elem.clientHeight < elem.scrollHeight) {
+    if (
+      elem.clientWidth < elem.scrollWidth ||
+      elem.clientHeight < elem.scrollHeight
+    ) {
       let elemCSS = css(elem);
       if (
-        (elem.clientWidth < elem.scrollWidth && (elemCSS.overflowX == "auto" || elemCSS.overflowX == "scroll")) ||
-        (elem.clientHeight < elem.scrollHeight && (elemCSS.overflowY == "auto" || elemCSS.overflowY == "scroll"))
+        (elem.clientWidth < elem.scrollWidth &&
+          (elemCSS.overflowX == 'auto' || elemCSS.overflowX == 'scroll')) ||
+        (elem.clientHeight < elem.scrollHeight &&
+          (elemCSS.overflowY == 'auto' || elemCSS.overflowY == 'scroll'))
       ) {
         if (!elem.getBoundingClientRect || elem === document.body) {
           return getWindowScrollingElement();
@@ -144,8 +160,9 @@ export function getRect(el, relativeToContainingBlock, container) {
         let containerRect = container.getBoundingClientRect();
 
         // Set relative to edges of padding box of container
-        top -= containerRect.top + parseInt(css(container, "border-top-width"));
-        left -= containerRect.left + parseInt(css(container, "border-left-width"));
+        top -= containerRect.top + parseInt(css(container, 'border-top-width'));
+        left -=
+          containerRect.left + parseInt(css(container, 'border-left-width'));
         bottom = top + elRect.height;
         right = left + elRect.width;
 
@@ -172,7 +189,13 @@ export function closest(el, selector, ctx, includeCTX) {
 
   ctx = ctx || document;
   do {
-    if ((selector != null && (selector[0] === ">" ? el.parentNode === ctx && matches(el, selector) : matches(el, selector))) || (includeCTX && el === ctx)) {
+    if (
+      (selector != null &&
+        (selector[0] === '>'
+          ? el.parentNode === ctx && matches(el, selector)
+          : matches(el, selector))) ||
+      (includeCTX && el === ctx)
+    ) {
       return el;
     }
 
@@ -207,7 +230,12 @@ export function contains(el, parent) {
 export function lastChild(el, selector) {
   let last = el.lastElementChild;
 
-  while (last && (last === Sortable.ghost || css(last, "display") === "none" || (selector && !matches(last, selector)))) {
+  while (
+    last &&
+    (last === Sortable.ghost ||
+      css(last, 'display') === 'none' ||
+      (selector && !matches(last, selector)))
+  ) {
     last = last.previousElementSibling;
   }
 
@@ -224,7 +252,12 @@ export function index(el, selector) {
 
   let index = 0;
   while ((el = el.previousElementSibling)) {
-    if (el !== Sortable.ghost && el.nodeName.toUpperCase() !== "TEMPLATE" && css(el, "display") !== "none" && (!selector || matches(el, selector))) {
+    if (
+      el !== Sortable.ghost &&
+      el.nodeName.toUpperCase() !== 'TEMPLATE' &&
+      css(el, 'display') !== 'none' &&
+      (!selector || matches(el, selector))
+    ) {
       index++;
     }
   }
@@ -241,7 +274,12 @@ export function getChild(el, childNum, selector, includeDragEl) {
     children = el.children;
 
   while (i < children.length) {
-    if (children[i] !== Sortable.ghost && css(children[i], "display") !== "none" && closest(children[i], selector, el, false) && (includeDragEl || children[i] !== Sortable.dragged)) {
+    if (
+      children[i] !== Sortable.ghost &&
+      css(children[i], 'display') !== 'none' &&
+      closest(children[i], selector, el, false) &&
+      (includeDragEl || children[i] !== Sortable.dragged)
+    ) {
       if (currentChild === childNum) {
         return children[i];
       }
@@ -255,38 +293,61 @@ export function getChild(el, childNum, selector, includeDragEl) {
 
 export function detectDirection(el, selector) {
   let elCSS = css(el),
-    elWidth = parseInt(elCSS.width) - parseInt(elCSS.paddingLeft) - parseInt(elCSS.paddingRight) - parseInt(elCSS.borderLeftWidth) - parseInt(elCSS.borderRightWidth),
+    elWidth =
+      parseInt(elCSS.width) -
+      parseInt(elCSS.paddingLeft) -
+      parseInt(elCSS.paddingRight) -
+      parseInt(elCSS.borderLeftWidth) -
+      parseInt(elCSS.borderRightWidth),
     child1 = getChild(el, 0, selector),
     child2 = getChild(el, 1, selector),
     child1CSS = child1 && css(child1),
     child2CSS = child2 && css(child2),
-    child1Width = child1CSS && parseInt(child1CSS.marginLeft) + parseInt(child1CSS.marginRight) + getRect(child1).width,
-    child2Width = child2CSS && parseInt(child2CSS.marginLeft) + parseInt(child2CSS.marginRight) + getRect(child2).width,
-    CSSFloatProperty = Edge || IE11OrLess ? "cssFloat" : "float";
+    child1Width =
+      child1CSS &&
+      parseInt(child1CSS.marginLeft) +
+        parseInt(child1CSS.marginRight) +
+        getRect(child1).width,
+    child2Width =
+      child2CSS &&
+      parseInt(child2CSS.marginLeft) +
+        parseInt(child2CSS.marginRight) +
+        getRect(child2).width,
+    CSSFloatProperty = Edge || IE11OrLess ? 'cssFloat' : 'float';
 
-  if (elCSS.display === "flex") {
-    return elCSS.flexDirection === "column" || elCSS.flexDirection === "column-reverse" ? "vertical" : "horizontal";
+  if (elCSS.display === 'flex') {
+    return elCSS.flexDirection === 'column' ||
+      elCSS.flexDirection === 'column-reverse'
+      ? 'vertical'
+      : 'horizontal';
   }
 
-  if (elCSS.display === "grid") {
-    return elCSS.gridTemplateColumns.split(" ").length <= 1 ? "vertical" : "horizontal";
+  if (elCSS.display === 'grid') {
+    return elCSS.gridTemplateColumns.split(' ').length <= 1
+      ? 'vertical'
+      : 'horizontal';
   }
 
-  if (child1 && child1CSS.float && child1CSS.float !== "none") {
-    let touchingSideChild2 = child1CSS.float === "left" ? "left" : "right";
+  if (child1 && child1CSS.float && child1CSS.float !== 'none') {
+    let touchingSideChild2 = child1CSS.float === 'left' ? 'left' : 'right';
 
-    return child2 && (child2CSS.clear === "both" || child2CSS.clear === touchingSideChild2) ? "vertical" : "horizontal";
+    return child2 &&
+      (child2CSS.clear === 'both' || child2CSS.clear === touchingSideChild2)
+      ? 'vertical'
+      : 'horizontal';
   }
 
   return child1 &&
-    (child1CSS.display === "block" ||
-      child1CSS.display === "flex" ||
-      child1CSS.display === "table" ||
-      child1CSS.display === "grid" ||
-      (child1Width >= elWidth && elCSS[CSSFloatProperty] === "none") ||
-      (child2 && elCSS[CSSFloatProperty] === "none" && child1Width + child2Width > elWidth))
-    ? "vertical"
-    : "horizontal";
+    (child1CSS.display === 'block' ||
+      child1CSS.display === 'flex' ||
+      child1CSS.display === 'table' ||
+      child1CSS.display === 'grid' ||
+      (child1Width >= elWidth && elCSS[CSSFloatProperty] === 'none') ||
+      (child2 &&
+        elCSS[CSSFloatProperty] === 'none' &&
+        child1Width + child2Width > elWidth))
+    ? 'vertical'
+    : 'horizontal';
 }
 
 /**
@@ -295,10 +356,15 @@ export function detectDirection(el, selector) {
 export function toggleClass(el, name, isAdd) {
   if (el && name) {
     if (el.classList) {
-      el.classList[isAdd ? "add" : "remove"](name);
+      el.classList[isAdd ? 'add' : 'remove'](name);
     } else {
-      const className = (" " + el.className + " ").replace(R_SPACE, " ").replace(" " + name + " ", " ");
-      el.className = (className + (isAdd ? " " + name : "")).replace(R_SPACE, " ");
+      const className = (' ' + el.className + ' ')
+        .replace(R_SPACE, ' ')
+        .replace(' ' + name + ' ', ' ');
+      el.className = (className + (isAdd ? ' ' + name : '')).replace(
+        R_SPACE,
+        ' ',
+      );
     }
   }
 }
@@ -309,7 +375,7 @@ export function toggleClass(el, name, isAdd) {
 export function matches(el, selector) {
   if (!selector) return;
 
-  selector[0] === ">" && (selector = selector.substring(1));
+  selector[0] === '>' && (selector = selector.substring(1));
 
   if (el) {
     try {
@@ -336,35 +402,39 @@ export function css(el, prop, val) {
   if (style) {
     if (val === void 0) {
       if (document.defaultView && document.defaultView.getComputedStyle) {
-        val = document.defaultView.getComputedStyle(el, "");
+        val = document.defaultView.getComputedStyle(el, '');
       } else if (el.currentStyle) {
         val = el.currentStyle;
       }
       return prop === void 0 ? val : val[prop];
     } else {
-      if (!(prop in style) && prop.indexOf("webkit") === -1) {
-        prop = "-webkit-" + prop;
+      if (!(prop in style) && prop.indexOf('webkit') === -1) {
+        prop = '-webkit-' + prop;
       }
-      style[prop] = val + (typeof val === "string" ? "" : "px");
+      style[prop] = val + (typeof val === 'string' ? '' : 'px');
     }
   }
 }
 
 export function matrix(el, selfOnly) {
-  let appliedTransforms = "";
-  if (typeof el === "string") {
+  let appliedTransforms = '';
+  if (typeof el === 'string') {
     appliedTransforms = el;
   } else {
     do {
-      let transform = css(el, "transform");
+      let transform = css(el, 'transform');
 
-      if (transform && transform !== "none") {
-        appliedTransforms = transform + " " + appliedTransforms;
+      if (transform && transform !== 'none') {
+        appliedTransforms = transform + ' ' + appliedTransforms;
       }
     } while (!selfOnly && (el = el.parentNode));
   }
 
-  const matrixFn = window.DOMMatrix || window.WebKitCSSMatrix || window.CSSMatrix || window.MSCSSMatrix;
+  const matrixFn =
+    window.DOMMatrix ||
+    window.WebKitCSSMatrix ||
+    window.CSSMatrix ||
+    window.MSCSSMatrix;
 
   return matrixFn && new matrixFn(appliedTransforms);
 }
@@ -389,7 +459,12 @@ export function comparePosition(a, b) {
   return a.compareDocumentPosition
     ? a.compareDocumentPosition(b)
     : a.contains
-      ? (a != b && a.contains(b) && 16) + (a != b && b.contains(a) && 8) + (a.sourceIndex >= 0 && b.sourceIndex >= 0 ? (a.sourceIndex < b.sourceIndex && 4) + (a.sourceIndex > b.sourceIndex && 2) : 1)
+      ? (a != b && a.contains(b) && 16) +
+        (a != b && b.contains(a) && 8) +
+        (a.sourceIndex >= 0 && b.sourceIndex >= 0
+          ? (a.sourceIndex < b.sourceIndex && 4) +
+            (a.sourceIndex > b.sourceIndex && 2)
+          : 1)
       : 0;
 }
 
@@ -407,17 +482,17 @@ export function preventDefault(evt) {
 
 export function dispatchEvent({ sortable, name, evt }) {
   const callback = sortable.options[name];
-  if (typeof callback === "function") {
+  if (typeof callback === 'function') {
     return callback(Object.assign({}, evt));
   }
 }
 
 export function result(option, ...args) {
-  if (typeof option === "function") {
+  if (typeof option === 'function') {
     return option(...args);
   }
 
   return option;
 }
 
-export const expando = "Sortable" + Date.now();
+export const expando = 'Sortable' + Date.now();

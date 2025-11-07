@@ -1,11 +1,11 @@
-import { h, defineComponent } from "vue";
-import { ItemProps } from "./props";
+import { h, defineComponent } from 'vue';
+import { ItemProps } from './props';
 
 type CallFun = (vnodeEl: HTMLElement) => void;
-type Funs = Record<"mounted" | "updated" | "unmounted", CallFun>;
+type Funs = Record<'mounted' | 'updated' | 'unmounted', CallFun>;
 const createSlot = ({ mounted, updated, unmounted }: Funs) => {
   return defineComponent({
-    props: ["vnode"],
+    props: ['vnode'],
     mounted() {
       mounted(this.$el);
     },
@@ -23,17 +23,17 @@ const createSlot = ({ mounted, updated, unmounted }: Funs) => {
 
 const Item = defineComponent({
   props: ItemProps,
-  emits: ["resize"],
+  emits: ['resize'],
   setup(props, { emit, slots }) {
     let observer: ResizeObserver | null = null;
 
     const onSizeChange = (el: HTMLElement) => {
       const size = el ? el[props.sizeKey] : 0;
-      emit("resize", size, props.dataKey);
+      emit('resize', size, props.dataKey);
     };
 
     const mounted = (el: HTMLElement) => {
-      if (typeof ResizeObserver !== "undefined") {
+      if (typeof ResizeObserver !== 'undefined') {
         observer = new ResizeObserver(() => {
           onSizeChange(el);
         });
@@ -61,11 +61,11 @@ const Item = defineComponent({
         customSlot,
         {
           key: dataKey,
-          role: "item",
+          role: 'item',
           vnode: defaultSlot,
-          "data-key": dataKey,
+          'data-key': dataKey,
         },
-        { default: () => slots.default?.() }
+        { default: () => slots.default?.() },
       );
     };
   },

@@ -1,8 +1,18 @@
-import Dnd from "../sortable-dnd";
-import { Group, ScrollSpeed, SortableEvent, SortableOptions as DndOptions } from "../types";
-import { isSameValue } from "./utils";
+import Dnd from '../sortable-dnd';
+import {
+  Group,
+  ScrollSpeed,
+  SortableEvent,
+  SortableOptions as DndOptions,
+} from '../types';
+import { isSameValue } from './utils';
 
-type EmitEvents = "onDrag" | "onDragChange" | "onDrop" | "onChoose" | "onUnchoose";
+type EmitEvents =
+  | 'onDrag'
+  | 'onDragChange'
+  | 'onDrop'
+  | 'onChoose'
+  | 'onUnchoose';
 
 export interface DragEvent<T> {
   item: T;
@@ -36,7 +46,7 @@ export interface SortableOptions<T> {
   delay?: number;
   group?: string | Group;
   handle?: string;
-  lockAxis?: "x" | "y";
+  lockAxis?: 'x' | 'y';
   disabled?: boolean;
   sortable?: boolean;
   draggable?: string;
@@ -58,23 +68,23 @@ export interface SortableOptions<T> {
 }
 
 export const SortableAttrs = [
-  "delay",
-  "group",
-  "handle",
-  "lockAxis",
-  "disabled",
-  "sortable",
-  "draggable",
-  "animation",
-  "autoScroll",
-  "ghostClass",
-  "ghostStyle",
-  "chosenClass",
-  "scrollSpeed",
-  "fallbackOnBody",
-  "scrollThreshold",
-  "delayOnTouchOnly",
-  "placeholderClass",
+  'delay',
+  'group',
+  'handle',
+  'lockAxis',
+  'disabled',
+  'sortable',
+  'draggable',
+  'animation',
+  'autoScroll',
+  'ghostClass',
+  'ghostStyle',
+  'chosenClass',
+  'scrollSpeed',
+  'fallbackOnBody',
+  'scrollThreshold',
+  'delayOnTouchOnly',
+  'placeholderClass',
 ];
 
 export class Sortable<T> {
@@ -96,7 +106,10 @@ export class Sortable<T> {
     this.rangeChanged = false;
   }
 
-  public option<K extends keyof SortableOptions<T>>(key: K, value: SortableOptions<T>[K]) {
+  public option<K extends keyof SortableOptions<T>>(
+    key: K,
+    value: SortableOptions<T>[K],
+  ) {
     this.options[key] = value;
     if (SortableAttrs.includes(key)) {
       this.sortable.option(key as keyof DndOptions, value);
@@ -104,50 +117,53 @@ export class Sortable<T> {
   }
 
   private installSortable() {
-    const props = SortableAttrs.reduce((res, key) => {
-      res[key] = this.options[key as keyof typeof this.options];
-      return res;
-    }, {} as Record<string, any>);
+    const props = SortableAttrs.reduce(
+      (res, key) => {
+        res[key] = this.options[key as keyof typeof this.options];
+        return res;
+      },
+      {} as Record<string, any>,
+    );
 
     this.sortable = new Dnd(this.el, {
       ...props,
       emptyInsertThreshold: 0,
-      swapOnDrop: event => event.from === event.to,
-      removeCloneOnDrop: event => event.from === event.to,
-      onDrag: event => this.onDrag(event),
-      onDrop: event => this.onDrop(event),
-      onDragChange: event => this.onDragChange(event),
-      onChoose: event => this.onChoose(event),
-      onUnchoose: event => this.onUnchoose(event),
+      swapOnDrop: (event) => event.from === event.to,
+      removeCloneOnDrop: (event) => event.from === event.to,
+      onDrag: (event) => this.onDrag(event),
+      onDrop: (event) => this.onDrop(event),
+      onDragChange: (event) => this.onDragChange(event),
+      onChoose: (event) => this.onChoose(event),
+      onUnchoose: (event) => this.onUnchoose(event),
     });
   }
 
   private onChoose(event: SortableEvent) {
-    this.dispatchEvent("onChoose", event);
+    this.dispatchEvent('onChoose', event);
   }
 
   private onUnchoose(event: SortableEvent) {
-    this.dispatchEvent("onUnchoose", event);
+    this.dispatchEvent('onUnchoose', event);
   }
 
   private onDrag(event: SortableEvent) {
-    const dataKey = event.node.getAttribute("data-key");
+    const dataKey = event.node.getAttribute('data-key');
     const index = this.getIndex(dataKey);
     const item = this.options.list[index];
     const key = this.options.uniqueKeys[index];
 
     // store the dragged item
-    this.sortable.option("store", { item, key, index, oldIndex: index });
-    this.dispatchEvent("onDrag", { item, key, index, event });
+    this.sortable.option('store', { item, key, index, oldIndex: index });
+    this.dispatchEvent('onDrag', { item, key, index, event });
   }
 
   // 拖拽位置变化
   private onDragChange(event: SortableEvent) {
-    const storedData = Dnd.get(event.from)?.option("store");
+    const storedData = Dnd.get(event.from)?.option('store');
     const oldIndex = storedData ? storedData.oldIndex : -1;
     const draggedKey = storedData ? storedData.key : null;
 
-    const targetKey = event.target.getAttribute("data-key");
+    const targetKey = event.target.getAttribute('data-key');
     let newIndex = this.getIndex(targetKey);
 
     const currentDraggedIndex = this.getIndex(draggedKey);
@@ -172,13 +188,13 @@ export class Sortable<T> {
       item: this.options.list[newIndex],
     };
 
-    this.sortable.option("store").oldIndex = newIndex;
+    this.sortable.option('store').oldIndex = newIndex;
 
-    this.dispatchEvent("onDragChange", params);
+    this.dispatchEvent('onDragChange', params);
   }
 
   private onDrop(event: SortableEvent) {
-    const { item, key, index } = Dnd.get(event.from)?.option("store");
+    const { item, key, index } = Dnd.get(event.from)?.option('store');
     const list = this.options.list;
     const params: DropEvent<T> = {
       key,
@@ -195,7 +211,7 @@ export class Sortable<T> {
       this.handleDropEvent(event, params, index);
     }
 
-    this.dispatchEvent("onDrop", params);
+    this.dispatchEvent('onDrop', params);
 
     if (event.from === this.el && this.rangeChanged) {
       Dnd.dragged?.remove();
@@ -208,8 +224,12 @@ export class Sortable<T> {
     this.rangeChanged = false;
   }
 
-  private handleDropEvent(event: SortableEvent, params: DropEvent<T>, index: number) {
-    const targetKey = event.target.getAttribute("data-key");
+  private handleDropEvent(
+    event: SortableEvent,
+    params: DropEvent<T>,
+    index: number,
+  ) {
+    const targetKey = event.target.getAttribute('data-key');
     let newIndex = -1;
     let oldIndex = index;
 
@@ -218,7 +238,10 @@ export class Sortable<T> {
       // re-get the dragged element's index
       oldIndex = this.getIndex(params.key);
       newIndex = this.getIndex(targetKey);
-      if ((oldIndex < newIndex && event.relative === -1) || (oldIndex > newIndex && event.relative === 1)) {
+      if (
+        (oldIndex < newIndex && event.relative === -1) ||
+        (oldIndex > newIndex && event.relative === 1)
+      ) {
         newIndex += event.relative;
       }
 

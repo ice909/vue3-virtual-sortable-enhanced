@@ -26,7 +26,7 @@ export function throttle(fn: Function, wait: number) {
 
 export function debounce<T extends (...args: any[]) => any>(
   fn: T,
-  wait: number
+  wait: number,
 ) {
   const throttled = throttle(fn, wait);
 
@@ -48,10 +48,15 @@ export function isSameValue(a: string | number, b: string | number) {
 
 export function getDataKey(item, dataKey: string | string[]): string | number {
   return (
-    !Array.isArray(dataKey) ? dataKey.replace(/\[/g, '.').replace(/\]/g, '.').split('.') : dataKey
+    !Array.isArray(dataKey)
+      ? dataKey.replace(/\[/g, '.').replace(/\]/g, '.').split('.')
+      : dataKey
   ).reduce((o, k) => (o || {})[k], item);
 }
 
 export function elementIsDocumentOrWindow(element) {
-  return (element instanceof Document && element.nodeType === 9) || element instanceof Window;
+  return (
+    (element instanceof Document && element.nodeType === 9) ||
+    element instanceof Window
+  );
 }

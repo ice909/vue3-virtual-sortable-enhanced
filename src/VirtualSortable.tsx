@@ -10,7 +10,7 @@ import {
   onDeactivated,
   onBeforeMount,
   defineComponent,
-} from "vue";
+} from 'vue';
 import {
   Range,
   Virtual,
@@ -25,10 +25,10 @@ import {
   VirtualOptions,
   SortableOptions,
   isSameValue,
-} from "./core";
-import { VirtualProps } from "./props";
-import Item from "./item";
-import { SortableEvent } from "./types";
+} from './core';
+import { VirtualProps } from './props';
+import Item from './item';
+import { SortableEvent } from './types';
 
 const getList = (source: any) => {
   return isRef(source) ? source.value : source;
@@ -37,13 +37,13 @@ const getList = (source: any) => {
 const VirtualList = defineComponent({
   props: VirtualProps,
   emits: [
-    "update:modelValue",
-    "top",
-    "bottom",
-    "drag",
-    "dragChange",
-    "drop",
-    "rangeChange",
+    'update:modelValue',
+    'top',
+    'bottom',
+    'drag',
+    'dragChange',
+    'drop',
+    'rangeChange',
   ],
   setup(props, { emit, slots, expose }) {
     const list = ref([]);
@@ -53,7 +53,7 @@ const VirtualList = defineComponent({
       front: 0,
       behind: 0,
     });
-    const horizontal = computed(() => props.direction !== "vertical");
+    const horizontal = computed(() => props.direction !== 'vertical');
 
     const rootRef = ref<HTMLElement>();
     const wrapRef = ref<HTMLElement>();
@@ -117,7 +117,7 @@ const VirtualList = defineComponent({
       },
       {
         deep: true,
-      }
+      },
     );
 
     onBeforeMount(() => {
@@ -156,7 +156,7 @@ const VirtualList = defineComponent({
       updateUniqueKeys();
       updateRange(lastList, data);
 
-      sortable?.option("list", data);
+      sortable?.option('list', data);
 
       // if auto scroll to the last offset
       if (topLoadLength && props.keepOffset) {
@@ -172,8 +172,8 @@ const VirtualList = defineComponent({
 
     const updateUniqueKeys = () => {
       uniqueKeys = list.value.map((item) => getDataKey(item, props.dataKey));
-      virtual?.option("uniqueKeys", uniqueKeys);
-      sortable?.option("uniqueKeys", uniqueKeys);
+      virtual?.option('uniqueKeys', uniqueKeys);
+      sortable?.option('uniqueKeys', uniqueKeys);
     };
 
     const updateRange = (oldList: Array<any>, newList: Array<any>) => {
@@ -207,12 +207,15 @@ const VirtualList = defineComponent({
     // ========================================== use virtual ==========================================
     let virtual: Virtual;
     const dragging = ref<boolean>(false);
-    const chosenKey = ref<string>("");
+    const chosenKey = ref<string>('');
     const virtualAttributes = computed(() => {
-      return VirtualAttrs.reduce((res, key) => {
-        res[key] = props[key as keyof typeof props];
-        return res;
-      }, {} as Record<string, any>);
+      return VirtualAttrs.reduce(
+        (res, key) => {
+          res[key] = props[key as keyof typeof props];
+          return res;
+        },
+        {} as Record<string, any>,
+      );
     });
 
     watch(virtualAttributes, (newVal, oldVal) => {
@@ -226,11 +229,11 @@ const VirtualList = defineComponent({
 
     const handleToTop = throttle(() => {
       topLoadLength = list.value.length;
-      emit("top");
+      emit('top');
     }, 50);
 
     const handleToBottom = throttle(() => {
-      emit("bottom");
+      emit('bottom');
     }, 50);
 
     const onScroll = (event: ScrollEvent) => {
@@ -248,7 +251,7 @@ const VirtualList = defineComponent({
         sortable.rangeChanged = true;
       }
       range.value = newRange;
-      rangeChanged && emit("rangeChange", newRange);
+      rangeChanged && emit('rangeChange', newRange);
     };
 
     const installVirtual = () => {
@@ -280,10 +283,13 @@ const VirtualList = defineComponent({
     // ========================================== use sortable ==========================================
     let sortable: Sortable<any>;
     const sortableAttributes = computed(() => {
-      return SortableAttrs.reduce((res, key) => {
-        res[key] = props[key as keyof typeof props];
-        return res;
-      }, {} as Record<string, any>);
+      return SortableAttrs.reduce(
+        (res, key) => {
+          res[key] = props[key as keyof typeof props];
+          return res;
+        },
+        {} as Record<string, any>,
+      );
     });
 
     watch(sortableAttributes, (newVal, oldVal) => {
@@ -296,36 +302,36 @@ const VirtualList = defineComponent({
     });
 
     const onChoose = (event: SortableEvent) => {
-      chosenKey.value = event.node.getAttribute("data-key") as string;
+      chosenKey.value = event.node.getAttribute('data-key') as string;
     };
 
     const onUnchoose = () => {
-      chosenKey.value = "";
+      chosenKey.value = '';
     };
 
     const onDrag = (event: DragEvent<any>) => {
       dragging.value = true;
       if (!props.sortable) {
         virtual.enableScroll(false);
-        sortable.option("autoScroll", false);
+        sortable.option('autoScroll', false);
       }
-      emit("drag", event);
+      emit('drag', event);
     };
 
     const onDragChange = (event: SortableEvent) => {
-      emit("dragChange", event);
+      emit('dragChange', event);
     };
 
     const onDrop = (event: DropEvent<any>) => {
       dragging.value = false;
 
       virtual.enableScroll(true);
-      sortable.option("autoScroll", props.autoScroll);
+      sortable.option('autoScroll', props.autoScroll);
 
       if (event.changed) {
-        emit("update:modelValue", event.list);
+        emit('update:modelValue', event.list);
       }
-      emit("drop", event);
+      emit('drop', event);
     };
 
     const installSortable = () => {
@@ -343,11 +349,11 @@ const VirtualList = defineComponent({
 
     // ========================================== layout ==========================================
     const renderSpacer = (offset: number) => {
-      const offsetKey = horizontal.value ? "width" : "height";
+      const offsetKey = horizontal.value ? 'width' : 'height';
       if (props.tableMode) {
         const tdStyle = { padding: 0, border: 0, [offsetKey]: `${offset}px` };
 
-        return h("tr", {}, [h("td", { style: tdStyle })]);
+        return h('tr', {}, [h('td', { style: tdStyle })]);
       }
 
       return null;
@@ -356,7 +362,7 @@ const VirtualList = defineComponent({
     const renderItems = () => {
       const renders: any[] = [];
       const { start, end, front, behind } = range.value;
-      const sizeKey = horizontal.value ? "offsetWidth" : "offsetHeight";
+      const sizeKey = horizontal.value ? 'offsetWidth' : 'offsetHeight';
 
       renders.push(renderSpacer(front));
 
@@ -371,16 +377,16 @@ const VirtualList = defineComponent({
                   Item,
                   {
                     key: dataKey,
-                    style: dragging.value && isChosen && { display: "none" },
+                    style: dragging.value && isChosen && { display: 'none' },
                     dataKey: dataKey,
                     sizeKey: sizeKey,
                     onResize: onItemResized,
                   },
                   {
                     default: () => slots.item?.({ record, index, dataKey }),
-                  }
+                  },
                 )
-              : null
+              : null,
           );
         }
       }
@@ -395,13 +401,13 @@ const VirtualList = defineComponent({
       const { tableMode, rootTag, wrapTag, scroller, wrapClass, wrapStyle } =
         props;
 
-      const overflow = horizontal.value ? "auto hidden" : "hidden auto";
+      const overflow = horizontal.value ? 'auto hidden' : 'hidden auto';
       const padding = horizontal.value
         ? `0 ${behind}px 0 ${front}px`
         : `${front}px 0 ${behind}px`;
 
-      const containerTag = tableMode ? "table" : rootTag;
-      const wrapperTag = tableMode ? "tbody" : wrapTag;
+      const containerTag = tableMode ? 'table' : rootTag;
+      const wrapperTag = tableMode ? 'tbody' : wrapTag;
 
       return h(
         containerTag,
@@ -421,11 +427,11 @@ const VirtualList = defineComponent({
               },
               {
                 default: () => renderItems(),
-              }
+              },
             ),
             slots.footer?.(),
           ],
-        }
+        },
       );
     };
   },

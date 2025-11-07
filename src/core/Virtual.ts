@@ -153,7 +153,10 @@ export class Virtual {
     }, 5);
   }
 
-  public option<K extends keyof VirtualOptions>(key: K, value: VirtualOptions[K]) {
+  public option<K extends keyof VirtualOptions>(
+    key: K,
+    value: VirtualOptions[K],
+  ) {
     const oldValue = this.options[key];
 
     this.options[key] = value;
@@ -166,7 +169,8 @@ export class Virtual {
       });
     }
     if (key === 'scroller') {
-      oldValue && Dnd.utils.off(oldValue as HTMLElement, 'scroll', this.onScroll);
+      oldValue &&
+        Dnd.utils.off(oldValue as HTMLElement, 'scroll', this.onScroll);
       this.updateScrollElement();
       this.addScrollEventListener();
     }
@@ -216,20 +220,29 @@ export class Virtual {
 
   public addScrollEventListener() {
     if (this.options.scroller) {
-      Dnd.utils.on(this.options.scroller as HTMLElement, 'scroll', this.onScroll);
+      Dnd.utils.on(
+        this.options.scroller as HTMLElement,
+        'scroll',
+        this.onScroll,
+      );
     }
   }
 
   public removeScrollEventListener() {
     if (this.options.scroller) {
-      Dnd.utils.off(this.options.scroller as HTMLElement, 'scroll', this.onScroll);
+      Dnd.utils.off(
+        this.options.scroller as HTMLElement,
+        'scroll',
+        this.onScroll,
+      );
     }
   }
 
   public enableScroll(scrollable: boolean) {
     const { scroller } = this.options;
     const eventFn = scrollable ? Dnd.utils.off : Dnd.utils.on;
-    const wheelEvent = 'onwheel' in document.createElement('div') ? 'wheel' : 'mousewheel';
+    const wheelEvent =
+      'onwheel' in document.createElement('div') ? 'wheel' : 'mousewheel';
 
     eventFn(scroller as HTMLElement, 'DOMMouseScroll', this.preventDefault);
     eventFn(scroller as HTMLElement, wheelEvent, this.preventDefault);
@@ -252,7 +265,8 @@ export class Virtual {
   private updateScrollElement() {
     const scroller = this.options.scroller;
     if (elementIsDocumentOrWindow(scroller)) {
-      const scrollEl = document.scrollingElement || document.documentElement || document.body;
+      const scrollEl =
+        document.scrollingElement || document.documentElement || document.body;
       this.scrollEl = scrollEl as HTMLElement;
     } else {
       this.scrollEl = scroller as HTMLElement;
@@ -413,7 +427,9 @@ export class Virtual {
   }
 
   private getItemSize() {
-    return this.isFixed() ? this.fixedSize : this.options.size || this.averageSize;
+    return this.isFixed()
+      ? this.fixedSize
+      : this.options.size || this.averageSize;
   }
 
   private getScrollStartOffset() {

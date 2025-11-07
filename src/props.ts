@@ -1,13 +1,13 @@
-import { PropType } from "vue";
+import { PropType } from 'vue';
 
-type Direction = "vertical" | "horizontal";
-type LockAxis = "x" | "y";
+type Direction = 'vertical' | 'horizontal';
+type LockAxis = 'x' | 'y';
 
 export const VirtualProps = {
   modelValue: {},
   dataKey: {
     type: String,
-    default: "",
+    default: '',
     required: true,
   },
   tableMode: {
@@ -36,11 +36,11 @@ export const VirtualProps = {
   },
   lockAxis: {
     type: String as PropType<LockAxis>,
-    default: "",
+    default: '',
   },
   direction: {
     type: String as PropType<Direction>,
-    default: "vertical",
+    default: 'vertical',
   },
   keeps: {
     type: Number,
@@ -96,15 +96,15 @@ export const VirtualProps = {
   },
   rootTag: {
     type: String,
-    default: "div",
+    default: 'div',
   },
   wrapTag: {
     type: String,
-    default: "div",
+    default: 'div',
   },
   wrapClass: {
     type: String,
-    default: "",
+    default: '',
   },
   wrapStyle: {
     type: Object,
@@ -112,7 +112,7 @@ export const VirtualProps = {
   },
   ghostClass: {
     type: String,
-    default: "",
+    default: '',
   },
   ghostStyle: {
     type: Object,
@@ -120,11 +120,11 @@ export const VirtualProps = {
   },
   chosenClass: {
     type: String,
-    default: "",
+    default: '',
   },
   placeholderClass: {
     type: String,
-    default: "",
+    default: '',
   },
 };
 
@@ -135,6 +135,6 @@ export const ItemProps = {
   },
   sizeKey: {
     type: String,
-    default: "offsetHeight",
+    default: 'offsetHeight',
   },
 };
