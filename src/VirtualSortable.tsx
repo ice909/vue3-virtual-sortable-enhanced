@@ -1,115 +1,70 @@
 import {
-  h,
-  ref,
-  isRef,
-  watch,
   computed,
-  onMounted,
-  onActivated,
-  onUnmounted,
-  onDeactivated,
-  onBeforeMount,
   defineComponent,
+  isRef,
+  onBeforeMount,
+  onMounted,
+  ref,
+  watch,
 } from 'vue';
-import {
-  Range,
-  Virtual,
-  Sortable,
-  throttle,
-  DropEvent,
-  DragEvent,
-  getDataKey,
-  ScrollEvent,
-  VirtualAttrs,
-  SortableAttrs,
-  VirtualOptions,
-  SortableOptions,
-  isSameValue,
-} from './core';
 import { VirtualProps } from './props';
-import Item from './item';
+import { useVirtualList } from '@vueuse/core';
+import {
+  DragEvent,
+  DropEvent,
+  isSameValue,
+  Sortable,
+  SortableAttrs,
+  SortableOptions,
+} from './core';
 import { SortableEvent } from './types';
+import Item from './item';
 
 const getList = (source: any) => {
   return isRef(source) ? source.value : source;
 };
 
-const VirtualList = defineComponent({
+function getDataKey(item, dataKey: string | string[]): string | number {
+  return (
+    !Array.isArray(dataKey)
+      ? dataKey.replace(/\[/g, '.').replace(/\]/g, '.').split('.')
+      : dataKey
+  ).reduce((o, k) => (o || {})[k], item);
+}
+
+export default defineComponent({
   props: VirtualProps,
-  emits: [
-    'update:modelValue',
-    'top',
-    'bottom',
-    'drag',
-    'dragChange',
-    'drop',
-    'rangeChange',
-  ],
   setup(props, { emit, slots, expose }) {
-    const list = ref([]);
-    const range = ref<Range>({
-      start: 0,
-      end: props.keeps - 1,
-      front: 0,
-      behind: 0,
-    });
-    const horizontal = computed(() => props.direction !== 'vertical');
+    const data = ref<any[]>([]);
+    const dragging = ref<boolean>(false);
+    const wrapperRef = ref<HTMLElement | null>(null);
+    let uniqueKeys: (string | number)[] = [];
+    let sortable: Sortable<any>;
+    const chosenKey = ref<string>('');
 
-    const rootRef = ref<HTMLElement>();
-    const wrapRef = ref<HTMLElement>();
+    const { list, containerProps, wrapperProps, scrollTo } = useVirtualList(
+      data,
+      {
+        itemHeight: props.getItemHeight!,
+        overscan: 30,
+      },
+    );
 
-    function getSize(key: string | number) {
-      return virtual.getSize(key);
+    const updateUniqueKeys = () => {
+      uniqueKeys = data.value.map((item) => getDataKey(item, props.dataKey));
+      sortable?.option('uniqueKeys', uniqueKeys);
+    };
+
+    function onModelUpdate() {
+      const _data = getList(props.modelValue);
+      if (!_data) return;
+      data.value = _data;
+
+      updateUniqueKeys();
+
+      sortable?.option('list', _data);
     }
 
-    function getOffset() {
-      return virtual.getOffset();
-    }
-
-    function getClientSize() {
-      return virtual.getClientSize();
-    }
-
-    function getScrollSize() {
-      return virtual.getScrollSize();
-    }
-
-    function scrollToKey(key: string | number) {
-      const index = uniqueKeys.indexOf(key);
-      if (index > -1) {
-        virtual.scrollToIndex(index);
-      }
-    }
-
-    function scrollToOffset(offset: number) {
-      virtual.scrollToOffset(offset);
-    }
-
-    function scrollToIndex(index: number) {
-      virtual.scrollToIndex(index);
-    }
-
-    function scrollToTop() {
-      scrollToOffset(0);
-    }
-
-    function scrollToBottom() {
-      virtual.scrollToBottom();
-    }
-
-    expose({
-      getSize,
-      getOffset,
-      getClientSize,
-      getScrollSize,
-      scrollToTop,
-      scrollToBottom,
-      scrollToKey,
-      scrollToIndex,
-      scrollToOffset,
-    });
-
-    // ========================================== model change ==========================================
     watch(
       () => [props.modelValue],
       () => {
@@ -120,168 +75,43 @@ const VirtualList = defineComponent({
       },
     );
 
-    onBeforeMount(() => {
-      onModelUpdate();
-    });
-
-    // set back offset when awake from keep-alive
-    onActivated(() => {
-      virtual && scrollToOffset(virtual.offset);
-
-      virtual.addScrollEventListener();
-    });
-
-    onDeactivated(() => {
-      virtual.removeScrollEventListener();
-    });
-
-    onMounted(() => {
-      installVirtual();
-      installSortable();
-    });
-
-    onUnmounted(() => {
-      sortable?.destroy();
-      virtual?.removeScrollEventListener();
-    });
-
-    let lastList: any[] = [];
-    let uniqueKeys: (string | number)[] = [];
-    let topLoadLength: number = 0;
-    const onModelUpdate = () => {
-      const data = getList(props.modelValue);
-      if (!data) return;
-
-      list.value = data;
-      updateUniqueKeys();
-      updateRange(lastList, data);
-
-      sortable?.option('list', data);
-
-      // if auto scroll to the last offset
-      if (topLoadLength && props.keepOffset) {
-        const index = data.length - topLoadLength;
-        if (index > 0) {
-          scrollToIndex(index);
-        }
-        topLoadLength = 0;
+    const onDrag = (event: DragEvent<any>) => {
+      dragging.value = true;
+      if (!props.sortable) {
+        sortable.option('autoScroll', false);
       }
-
-      lastList = [...list.value];
+      emit('drag', event);
     };
 
-    const updateUniqueKeys = () => {
-      uniqueKeys = list.value.map((item) => getDataKey(item, props.dataKey));
-      virtual?.option('uniqueKeys', uniqueKeys);
-      sortable?.option('uniqueKeys', uniqueKeys);
+    const onDrop = (event: DropEvent<any>) => {
+      dragging.value = false;
+
+      sortable.option('autoScroll', props.autoScroll);
+
+      if (event.changed) {
+        emit('update:modelValue', event.list);
+      }
+      emit('drop', event);
     };
 
-    const updateRange = (oldList: Array<any>, newList: Array<any>) => {
-      if (!oldList.length && !newList.length) {
-        return;
-      }
-
-      if (oldList.length === newList.length) {
-        return;
-      }
-
-      let newRange = { ...range.value };
-      if (
-        oldList.length > props.keeps &&
-        newList.length > oldList.length &&
-        newRange.end === oldList.length - 1 &&
-        scrolledToBottom()
-      ) {
-        newRange.start++;
-      }
-      virtual?.updateRange(newRange);
+    const onDragChange = (event: SortableEvent) => {
+      emit('dragChange', event);
     };
 
-    const scrolledToBottom = () => {
-      const offset = getOffset();
-      const clientSize = getClientSize();
-      const scrollSize = getScrollSize();
-      return offset + clientSize + 1 >= scrollSize;
+    const onChoose = (event: SortableEvent) => {
+      chosenKey.value = event.node.getAttribute('data-key') as string;
     };
 
-    // ========================================== use virtual ==========================================
-    let virtual: Virtual;
-    const dragging = ref<boolean>(false);
-    const chosenKey = ref<string>('');
-    const virtualAttributes = computed(() => {
-      return VirtualAttrs.reduce(
-        (res, key) => {
-          res[key] = props[key as keyof typeof props];
-          return res;
-        },
-        {} as Record<string, any>,
-      );
-    });
-
-    watch(virtualAttributes, (newVal, oldVal) => {
-      if (!virtual) return;
-      for (let key in newVal) {
-        if (newVal[key] !== oldVal[key]) {
-          virtual.option(key as keyof VirtualOptions, newVal[key]);
-        }
-      }
-    });
-
-    const handleToTop = throttle(() => {
-      topLoadLength = list.value.length;
-      emit('top');
-    }, 50);
-
-    const handleToBottom = throttle(() => {
-      emit('bottom');
-    }, 50);
-
-    const onScroll = (event: ScrollEvent) => {
-      topLoadLength = 0;
-      if (!!list.value.length && event.top) {
-        handleToTop();
-      } else if (event.bottom) {
-        handleToBottom();
-      }
+    const onUnchoose = () => {
+      chosenKey.value = '';
     };
 
-    const onUpdate = (newRange: Range) => {
-      const rangeChanged = newRange.start !== range.value.start;
-      if (dragging.value && rangeChanged && sortable) {
-        sortable.rangeChanged = true;
-      }
-      range.value = newRange;
-      rangeChanged && emit('rangeChange', newRange);
-    };
-
-    const installVirtual = () => {
-      virtual = new Virtual({
-        ...virtualAttributes.value,
-        buffer: Math.round(props.keeps / 3),
-        wrapper: wrapRef.value!,
-        scroller: props.scroller || rootRef.value,
-        uniqueKeys: uniqueKeys,
-        onScroll,
-        onUpdate,
-      });
-    };
-
-    const onItemResized = (size: number, key: string | number) => {
-      // ignore changes for dragging element
+    function onItemResized(size: number, key: string | number) {
       if (isSameValue(key, chosenKey.value)) {
         return;
       }
+    }
 
-      const sizes = virtual.sizes.size;
-      virtual.onItemResized(key, size);
-
-      if (sizes === props.keeps - 1 && list.value.length > props.keeps) {
-        virtual.updateRange(range.value);
-      }
-    };
-
-    // ========================================== use sortable ==========================================
-    let sortable: Sortable<any>;
     const sortableAttributes = computed(() => {
       return SortableAttrs.reduce(
         (res, key) => {
@@ -300,44 +130,10 @@ const VirtualList = defineComponent({
         }
       }
     });
-
-    const onChoose = (event: SortableEvent) => {
-      chosenKey.value = event.node.getAttribute('data-key') as string;
-    };
-
-    const onUnchoose = () => {
-      chosenKey.value = '';
-    };
-
-    const onDrag = (event: DragEvent<any>) => {
-      dragging.value = true;
-      if (!props.sortable) {
-        virtual.enableScroll(false);
-        sortable.option('autoScroll', false);
-      }
-      emit('drag', event);
-    };
-
-    const onDragChange = (event: SortableEvent) => {
-      emit('dragChange', event);
-    };
-
-    const onDrop = (event: DropEvent<any>) => {
-      dragging.value = false;
-
-      virtual.enableScroll(true);
-      sortable.option('autoScroll', props.autoScroll);
-
-      if (event.changed) {
-        emit('update:modelValue', event.list);
-      }
-      emit('drop', event);
-    };
-
-    const installSortable = () => {
-      sortable = new Sortable(rootRef.value!, {
+    function installSortable() {
+      sortable = new Sortable(containerProps.ref.value!, {
         ...sortableAttributes.value,
-        list: list.value,
+        list: data.value,
         uniqueKeys: uniqueKeys,
         onDrag,
         onDrop,
@@ -345,96 +141,90 @@ const VirtualList = defineComponent({
         onUnchoose,
         onDragChange,
       });
-    };
+    }
 
-    // ========================================== layout ==========================================
-    const renderSpacer = (offset: number) => {
-      const offsetKey = horizontal.value ? 'width' : 'height';
-      if (props.tableMode) {
-        const tdStyle = { padding: 0, border: 0, [offsetKey]: `${offset}px` };
-
-        return h('tr', {}, [h('td', { style: tdStyle })]);
+    function scrollToIndex(index: number) {
+      if (scrollTo) {
+        scrollTo(index);
       }
+    }
 
-      return null;
-    };
+    function scrollToKey(key: string | number) {
+      const index = data.value.findIndex((item) => {
+        return isSameValue(getDataKey(item, props.dataKey), key);
+      });
 
-    const renderItems = () => {
-      const renders: any[] = [];
-      const { start, end, front, behind } = range.value;
-      const sizeKey = horizontal.value ? 'offsetWidth' : 'offsetHeight';
-
-      renders.push(renderSpacer(front));
-
-      for (let index = start; index <= end; index++) {
-        const record = list.value[index];
-        if (record) {
-          const dataKey = getDataKey(record, props.dataKey);
-          const isChosen = isSameValue(dataKey, chosenKey.value);
-          renders.push(
-            slots.item
-              ? h(
-                  Item,
-                  {
-                    key: dataKey,
-                    style: dragging.value && isChosen && { display: 'none' },
-                    dataKey: dataKey,
-                    sizeKey: sizeKey,
-                    onResize: onItemResized,
-                  },
-                  {
-                    default: () => slots.item?.({ record, index, dataKey }),
-                  },
-                )
-              : null,
-          );
-        }
+      if (index !== -1 && scrollTo) {
+        scrollTo(index);
       }
+    }
 
-      renders.push(renderSpacer(behind));
+    function scrollToBottom() {
+      scrollToIndex(data.value.length - 1);
+    }
 
-      return renders;
-    };
+    function scrollToTop() {
+      scrollToIndex(0);
+    }
 
-    return () => {
-      const { front, behind } = range.value;
-      const { tableMode, rootTag, wrapTag, scroller, wrapClass, wrapStyle } =
-        props;
+    function getClientSize() {
+      return {
+        width: containerProps.ref.value?.clientWidth || 0,
+        height: containerProps.ref.value?.clientHeight || 0,
+      };
+    }
 
-      const overflow = horizontal.value ? 'auto hidden' : 'hidden auto';
-      const padding = horizontal.value
-        ? `0 ${behind}px 0 ${front}px`
-        : `${front}px 0 ${behind}px`;
+    function getWrapperSize() {
+      return {
+        width: wrapperRef.value?.offsetWidth || 0,
+        height: wrapperRef.value?.offsetHeight || 0,
+      };
+    }
 
-      const containerTag = tableMode ? 'table' : rootTag;
-      const wrapperTag = tableMode ? 'tbody' : wrapTag;
+    onBeforeMount(() => {
+      onModelUpdate();
+    });
 
-      return h(
-        containerTag,
-        {
-          ref: rootRef,
-          style: !scroller && !tableMode && { overflow },
-        },
-        {
-          default: () => [
-            slots.header?.(),
-            h(
-              wrapperTag,
-              {
-                ref: wrapRef,
-                class: wrapClass,
-                style: { ...wrapStyle, padding: !tableMode && padding },
-              },
-              {
-                default: () => renderItems(),
-              },
-            ),
-            slots.footer?.(),
-          ],
-        },
-      );
-    };
+    onMounted(() => {
+      installSortable();
+    });
+
+    expose({
+      getClientSize,
+      getWrapperSize,
+      scrollToKey,
+      scrollToBottom,
+      scrollToTop,
+      scrollToIndex,
+    });
+
+    return () => (
+      <div
+        {...containerProps}
+        style={{ position: 'absolute', width: '100%', height: '100%' }}
+      >
+        <div ref={wrapperRef} {...wrapperProps.value}>
+          {list.value.map((item, index) => {
+            const dataKey = getDataKey(item.data, props.dataKey);
+            const isHidden =
+              dragging.value && isSameValue(dataKey, chosenKey.value);
+            return (
+              <Item
+                key={dataKey}
+                dataKey={dataKey}
+                style={{
+                  display: isHidden ? 'none' : 'flex',
+                }}
+                sizeKey="offsetHeight"
+                onResize={onItemResized}
+                v-slots={{
+                  default: () => slots.item?.({ item: item.data, index }),
+                }}
+              ></Item>
+            );
+          })}
+        </div>
+      </div>
+    );
   },
 });
-
-export default VirtualList;

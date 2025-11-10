@@ -2,12 +2,17 @@ import { PropType } from 'vue';
 
 type Direction = 'vertical' | 'horizontal';
 type LockAxis = 'x' | 'y';
+type GetItemHeightFn = (index: number) => number;
 
 export const VirtualProps = {
   modelValue: {},
   dataKey: {
     type: String,
     default: '',
+    required: true,
+  },
+  getItemHeight: {
+    type: Function as PropType<GetItemHeightFn>,
     required: true,
   },
   tableMode: {
