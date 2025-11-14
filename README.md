@@ -29,7 +29,7 @@ This component requires the v-model data array, a unique dataKey, and the mandat
 
 ```TypeScript
 
-import VirtualList from '@ice909/virtual-sortable';
+import VirtualList from 'vue3-virtual-sortable-enhanced';
 import { ref } from 'vue';
 
 const data = ref(/* Your List Data */);
